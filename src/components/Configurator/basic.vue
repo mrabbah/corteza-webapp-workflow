@@ -32,30 +32,10 @@ export default {
     // Ignores exclusiveGateway indexes (#n)
     label: {
       get () {
-        if (this.getSourceType) {
-          if (this.getSourceType === 'gatewayExclusive') {
-            /* eslint-disable no-unused-vars */
-            const [edgeID, ...rest] = this.item.node.value.split(' - ')
-            return rest.join(' - ')
-          }
-        }
-
         return this.item.node.value
       },
 
       set (label) {
-        if (this.getSourceType) {
-          if (this.getSourceType === 'gatewayExclusive') {
-            /* eslint-disable no-unused-vars */
-            const [edgeID, ...rest] = this.item.node.value.split(' - ')
-            const newLabel = [edgeID]
-            if (label) {
-              newLabel.push(label)
-            }
-            label = newLabel.join(' - ')
-          }
-        }
-
         this.item.node.value = label
       },
     },
