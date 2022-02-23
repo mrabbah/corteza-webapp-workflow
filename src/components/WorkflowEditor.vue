@@ -1916,7 +1916,11 @@ export default {
 
     setValue (value, defaultName = false) {
       this.graph.model.setValue(this.sidebar.item.node, value)
-      this.vertices[this.sidebar.item.node.id].config.defaultName = defaultName
+      if (this.sidebar.item.node.edge) {
+        this.edges[this.sidebar.item.node.id].config.defaultName = defaultName
+      } else {
+        this.vertices[this.sidebar.item.node.id].config.defaultName = defaultName
+      }
     },
 
     zoom (up = true) {
