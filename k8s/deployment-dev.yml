@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: corteza-webapp-workflow
+  labels:
+    workload.user.cattle.io/workloadselector: apps.deployment-corteza-dev-corteza-webapp-workflow
+  namespace: corteza-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-corteza-dev-corteza-webapp-workflow
+  template:
+    metadata:
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-corteza-dev-corteza-webapp-workflow
+    spec:
+      restartPolicy: Always
+      containers:
+        - env:
+          - name: CONFIGJS
+            value: >-
+                  window.CortezaAPI = 'https://cortezadev.rabbahsoft.ma/api';
+                  window.CortezaAuth = 'https://cortezadev.rabbahsoft.ma/auth';
+                  window.CortezaWebapp = 'https://cortezadev.rabbahsoft.ma/workflow';
+                  window.i18nPseudoModeEnabled = false;
+          - name: BASE_PATH
+            value: /workflow  
+          image: mrabbah/corteza-webapp-workflow:TAG_NAME
+          imagePullPolicy: Always
+          name: corteza-webapp-workflow
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /workflow/config.js
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /workflow/config.js
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          startupProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /workflow/config.js
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: corteza-webapp-workflow-svc
+  namespace: corteza-dev
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    workload.user.cattle.io/workloadselector: apps.deployment-corteza-dev-corteza-webapp-workflow
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: corteza-webapp-workflow-ingress
+  namespace: corteza-dev
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: cortezadev.rabbahsoft.ma
+    http:
+      paths:
+      - backend:
+          service:
+            name: corteza-webapp-workflow-svc
+            port:
+              number: 80
+        path: /workflow
+        pathType: Prefix
